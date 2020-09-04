@@ -1,7 +1,8 @@
 import torch
 import numpy as np
 from torch.autograd import Variable, grad
-
+# pylint: disable=no-member
+# pylint: disable=not-callable
 def sigma_estimation(X, Y):
     """ sigma from median distance
     """
@@ -26,14 +27,14 @@ def distmat(X):
     D = torch.abs(D)
     return D
 
-def kernelmat(X, sigma):
+def kernelmat(X, sigma=None):
     """ kernel matrix baker
     """
     m = int(X.size()[0])
     dim = int(X.size()[1]) * 1.0
     H = torch.eye(m) - (1./m) * torch.ones([m,m])
     Dxx = distmat(X)
-    
+
     if sigma:
         variance = 2.*sigma*sigma*X.size()[1]            
         Kx = torch.exp( -Dxx / variance).type(torch.FloatTensor)   # kernel matrices        
@@ -137,7 +138,7 @@ def hsic_normalized(x, y, sigma=None, use_cuda=True, to_numpy=True):
     thehsic = Pxy/(Px*Py)
     return thehsic
 
-def hsic_normalized_cca(x, y, sigma, use_cuda=True, to_numpy=True):
+def hsic_normalized_cca(x, y, sigma=None, use_cuda=True, to_numpy=True):
     """
     """
     m = int(x.size()[0])
@@ -153,5 +154,3 @@ def hsic_normalized_cca(x, y, sigma, use_cuda=True, to_numpy=True):
     Pxy = torch.sum(torch.mul(Rx, Ry.t()))
 
     return Pxy
-
-
