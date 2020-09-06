@@ -17,34 +17,25 @@ def sigma_estimation(X, Y):
         med=1E-2
     return med
 
-def distmat(X, requires_grad=True):
+def distmat(X):
     """  distance matrix  |X.X - 2(X x Xt) + (X.X)t|
     Args
         X               (tensor) shape (batchsize, dims)
-        requires_grad   (bool[True]) False: removes gradient from output
     """
-    _cloned = False
-    if X.requires_grad and not requires_grad:
-        X = X.clone().detach()
-        _cloned = True
     out = torch.mm(X, X.T).mul_(-2.0)
     out.add_((X*X).sum(1, keepdim=True))
     out.add_((X*X).sum(1, keepdim=True).T)
-    if _cloned:
-        del X
     return out.abs_()
 
-def kernelmat(X, sigma=None, requires_grad=True):
+def kernelmat(X, sigma=None):
     """ kernel matrix baker
         Args
             X             (tensor) shape (batchsize, dims)
             sigma         (float [None]) from config
-            requires_grad (bool [True]) False: removes gradient from output
-
     """
     m, dim = X.size()
     H = torch.eye(m, device=X.device).sub_(1/m)
-    Kx = distmat(X, requires_grad=requires_grad)
+    Kx = distmat(X)
 
     if sigma:
         variance = 2.*sigma*sigma*dim
@@ -150,22 +141,21 @@ def hsic_normalized(x, y, sigma=None, use_cuda=True, to_numpy=True):
     thehsic = Pxy/(Px*Py)
     return thehsic
 
-def hsic_normalized_cca(x, y, sigma=None, requires_grad=True):
+def hsic_normalized_cca(x, y, sigma=None):
     """
         Args
             x       (tensor) shape (batchsize, dims)
             y       (tensor) shape (batchsize, dims)
             sigma   (float [None])
-            requires_grad   (bool[True]) False: removes gradient from output
     """
     epsilon = 1E-5
     m = x.size()[0]
     K_I = torch.eye(m, device=x.device).mul_(epsilon*m)
 
-    Kc = kernelmat(x, sigma=sigma, requires_grad=requires_grad)
+    Kc = kernelmat(x, sigma=sigma)
     Rx = Kc.mm(Kc.add(K_I).inverse())
 
-    Kc = kernelmat(y, sigma=sigma, requires_grad=requires_grad)
+    Kc = kernelmat(y, sigma=sigma)
     Ry = Kc.mm(Kc.add(K_I).inverse())
 
     out = Rx.mul_(Ry.t()).sum()
