@@ -17,11 +17,11 @@ def sigma_estimation(X, Y):
         med=1E-2
     return med
 
-def distmat(X, requires_grad=False):
+def distmat(X, requires_grad=True):
     """  distance matrix  |X.X - 2(X x Xt) + (X.X)t|
     Args
         X               (tensor) shape (batchsize, dims)
-        requires_grad   (bool[False]) if True passes gradient to out
+        requires_grad   (bool[True]) False: removes gradient from output
     """
     _cloned = False
     if X.requires_grad and not requires_grad:
@@ -34,12 +34,12 @@ def distmat(X, requires_grad=False):
         del X
     return out.abs_()
 
-def kernelmat(X, sigma=None, requires_grad=False):
+def kernelmat(X, sigma=None, requires_grad=True):
     """ kernel matrix baker
         Args
             X             (tensor) shape (batchsize, dims)
             sigma         (float [None]) from config
-            requires_grad (bool [False]) removes gradient from output
+            requires_grad (bool [True]) False: removes gradient from output
 
     """
     m, dim = X.size()
@@ -150,13 +150,13 @@ def hsic_normalized(x, y, sigma=None, use_cuda=True, to_numpy=True):
     thehsic = Pxy/(Px*Py)
     return thehsic
 
-def hsic_normalized_cca(x, y, sigma=None, requires_grad=False):
+def hsic_normalized_cca(x, y, sigma=None, requires_grad=True):
     """
         Args
             x       (tensor) shape (batchsize, dims)
             y       (tensor) shape (batchsize, dims)
             sigma   (float [None])
-            requires_grad   (bool[False])
+            requires_grad   (bool[True]) False: removes gradient from output
     """
     epsilon = 1E-5
     m = x.size()[0]
