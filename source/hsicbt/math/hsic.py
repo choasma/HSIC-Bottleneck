@@ -18,12 +18,10 @@ def sigma_estimation(X, Y):
     return med
 
 def distmat(X, requires_grad=False):
-    """  distance matrix  |X .X - 2(X x Xt) + (X.X)t|
-    more memory efficient and 25% faster dist matrix
-    in place ops save space, if no grad required, kill it
-    allocates tensor shape (len(X[0]), len(X[0])) only once
+    """  distance matrix  |X.X - 2(X x Xt) + (X.X)t|
     Args
-        requires_grad    (bool[False]) if True passes gradient to out
+        X               (tensor) shape (batchsize, dims)
+        requires_grad   (bool[False]) if True passes gradient to out
     """
     _cloned = False
     if X.requires_grad and not requires_grad:
@@ -39,10 +37,10 @@ def distmat(X, requires_grad=False):
 def kernelmat(X, sigma=None, requires_grad=False):
     """ kernel matrix baker
         Args
-            X             (tensor_ shape (batchsize, datadimension)
+            X             (tensor) shape (batchsize, dims)
             sigma         (float [None]) from config
             requires_grad (bool [False]) removes gradient from output
-        minimized memory allocation, fixed device, removes grad if requested
+
     """
     m, dim = X.size()
     H = torch.eye(m, device=X.device).sub_(1/m)
@@ -153,8 +151,12 @@ def hsic_normalized(x, y, sigma=None, use_cuda=True, to_numpy=True):
     return thehsic
 
 def hsic_normalized_cca(x, y, sigma=None, requires_grad=False):
-    """ reuse tensors, cleanup, maintains device, cleans grad
-        x, y of shape (num_batches, -1)
+    """
+        Args
+            x       (tensor) shape (batchsize, dims)
+            y       (tensor) shape (batchsize, dims)
+            sigma   (float [None])
+            requires_grad   (bool[False])
     """
     epsilon = 1E-5
     m = x.size()[0]
